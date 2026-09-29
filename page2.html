@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS1.6 MOD交流留言区 | 愚者YuZhFool</title>
+<style>
+:root {
+    --primary: #d62828;
+    --primary-glow: rgba(214,40,40,0.35);
+    --secondary: #ffb703;
+    --accent-cyan: #00f5d4;
+    --bg-dark: #0f1117;
+    --bg-card-dark: #181b24;
+    --bg-card-hover-dark: #202430;
+    --text-main: #f1f1f3;
+    --text-sub: #c2cad8;
+    --border-dark: #2c313f;
+    --warn-bg: rgba(214,40,40,0.12);
+    --tip-bg: rgba(0,245,212,0.10);
+    --code-bg: #10131a;
+}
+[data-theme="light"] {
+    --primary: #d62828;
+    --primary-glow: rgba(214,40,40,0.25);
+    --secondary: #d48b00;
+    --accent-cyan: #029e88;
+    --bg-dark: #f4f6fa;
+    --bg-card-dark: #ffffff;
+    --bg-card-hover-dark: #eef2f8;
+    --text-main: #141823;
+    --text-sub: #333a4a;
+    --border-dark: #d8dce6;
+    --warn-bg: rgba(214,40,40,0.08);
+    --tip-bg: rgba(0,245,212,0.08);
+    --code-bg: #222836;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Microsoft YaHei,sans-serif;}
+body {
+    background: var(--bg-dark);
+    background-image: radial-gradient(rgba(255,255,255,0.022) 1px, transparent 0);
+    background-size: 28px 28px;
+    color: var(--text-main);
+    transition: 0.35s ease all;
+    font-size:17px;
+    line-height:1.75;
+}
+.top-nav {
+    width:100%;
+    background: #12151c;
+    border-bottom:1px solid var(--border-dark);
+    padding:20px 50px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    z-index:999;
+}
+.logo-title {
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+.logo-title h2 {
+    color:#fff;
+    font-size:28px;
+}
+.logo-title span {
+    color:var(--secondary);
+    font-size:16px;
+    opacity:0.85;
+}
+.nav-links a {
+    color:var(--text-sub);
+    text-decoration:none;
+    margin:0 16px;
+    font-size:18px;
+    transition:0.2s;
+}
+.nav-links a:hover {
+    color:var(--primary);
+}
+.theme-switch-btn {
+    padding:12px 20px;
+    font-size:17px;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    transition:0.25s;
+}
+.theme-switch-btn:hover {
+    box-shadow:0 0 14px var(--primary-glow);
+    transform: scale(1.04);
+}
+.container{
+    max-width:1100px;
+    margin:0 auto;
+    padding:40px 30px;
+}
+.banner{
+    background:linear-gradient(135deg,#241012,#101826);
+    border-radius:18px;
+    padding:45px;
+    border:1px solid var(--border-dark);
+    margin-bottom:32px;
+}
+.banner h1{
+    font-size:46px;
+    margin-bottom:12px;
+}
+.banner p{
+    font-size:20px;
+    color:var(--text-sub);
+}
+.card{
+    background:var(--bg-card-dark);
+    border:1px solid var(--border-dark);
+    border-radius:16px;
+    padding:30px;
+    margin-bottom:30px;
+}
+.card h3{
+    font-size:26px;
+    color:var(--secondary);
+    margin-bottom:20px;
+}
+input,textarea{
+    width:100%;
+    background:#0f1219;
+    border:1px solid var(--border-dark);
+    border-radius:10px;
+    padding:16px 20px;
+    color:#fff;
+    font-size:17px;
+    margin-bottom:18px;
+}
+[data-theme="light"] input,
+[data-theme="light"] textarea{
+    background:#fff;
+    color:#111;
+}
+textarea{
+    min-height:160px;
+    resize:vertical;
+}
+.submit-btn{
+    padding:14px 28px;
+    font-size:18px;
+    background:var(--primary);
+    color:white;
+    border:0;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.25s;
+}
+.submit-btn:hover{
+    transform:scale(1.03);
+    box-shadow:0 0 12px var(--primary-glow);
+}
+.msg-item{
+    border:1px solid var(--border-dark);
+    border-radius:12px;
+    padding:22px;
+    margin-bottom:18px;
+    background:var(--bg-card-dark);
+}
+.msg-name{
+    color:var(--secondary);
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+.msg-gameid{
+    font-size:16px;
+    opacity:0.7;
+}
+.msg-time{
+    font-size:14px;
+    color:var(--text-sub);
+    opacity:0.7;
+    margin-bottom:12px;
+}
+.msg-content{
+    font-size:18px;
+}
+footer{
+    width:100%;
+    margin-top:60px;
+    padding:32px;
+    background:#12151c;
+    border-top:1px solid var(--border-dark);
+    text-align:center;
+    color:var(--text-sub);
+    font-size:16px;
+}
+#backTop{
+    position:fixed;
+    bottom:36px;
+    right:36px;
+    width:64px;height:64px;
+    border-radius:50%;
+    background:var(--primary);
+    color:white;
+    border:none;
+    font-size:26px;
+    cursor:pointer;
+    box-shadow:0 4px 18px rgba(0,0,0,0.4);
+    opacity:0;
+    pointer-events:none;
+    transition:0.3s;
+    z-index:99;
+}
+#backTop.show{opacity:1;pointer-events:auto;}
+@media(max-width:768px){
+    .top-nav{padding:16px 20px;}
+    .banner h1{font-size:34px;}
+}
+</style>
+</head>
+<body>
+<div class="top-nav">
+    <div class="logo-title">
+        <h2>CS1.6 MOD交流区</h2>
+        <span>愚者YuZhFool · 留言讨论MOD问题</span>
+    </div>
+    <div class="nav-links">
+        <a href="index.html">📖 返回教程主页</a>
+        <a href="#">B站主页</a>
+    </div>
+    <button class="theme-switch-btn" id="toggleTheme">切换浅色</button>
+</div>
+
+<div class="container">
+    <div class="banner">
+        <h1>💬 MOD交流留言板</h1>
+        <p>在这里提问、分享MOD资源、讨论HUD/模型/音效修改问题，文明交流。</p>
+    </div>
+
+    <div class="card">
+        <h3>📝 发表留言</h3>
+        <input type="text" id="gameid" placeholder="输入你的CS1.6游戏ID">
+        <input type="text" id="qqname" placeholder="输入你的QQ名称">
+        <textarea id="msg" placeholder="写下你的问题/分享内容、MOD求助、资源分享..."></textarea>
+        <button class="submit-btn" onclick="addMsg()">提交留言</button>
+    </div>
+
+    <div class="card">
+        <h3>📋 全部留言</h3>
+        <div id="msgList">
+            <!--示例留言-->
+            <div class="msg-item">
+                <div class="msg-name">QQ名：小宇 <span class="msg-gameid">｜游戏ID：CS_Player01</span></div>
+                <div class="msg-time">2026-09-29</div>
+                <div class="msg-content">请教，hud.txt修改完进游戏文字乱码怎么办？</div>
+            </div>
+            <div class="msg-item">
+                <div class="msg-name">QQ名：愚者YuZhFool <span class="msg-gameid">｜游戏ID：YuZhFool</span></div>
+                <div class="msg-time">2026-09-29</div>
+                <div class="msg-content">hud.txt保存编码必须选择ANSI，记事本另存为的时候底部修改编码。</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <p>作者：愚者YuZhFool | 交流区仅讨论CS1.6单机MOD，禁止广告、违规内容</p>
+    <p style="margin-top:10px">返回教程主页 | B站主页</p>
+</footer>
+
+<button id="backTop">↑</button>
+
+<script>
+//明暗主题切换
+const themeBtn = document.getElementById('toggleTheme');
+themeBtn.onclick = ()=>{
+    if(document.body.dataset.theme === 'light'){
+        delete document.body.dataset.theme;
+        themeBtn.innerText = "切换浅色";
+    }else{
+        document.body.dataset.theme="light";
+        themeBtn.innerText = "切换深色";
+    }
+}
+
+//提交留言函数（需要游戏ID、QQ名称、留言三项全部填写）
+function addMsg(){
+    const gameid = document.getElementById('gameid').value.trim();
+    const qqname = document.getElementById('qqname').value.trim();
+    const content = document.getElementById('msg').value.trim();
+    if(!gameid){
+        alert("请填写你的CS1.6游戏ID！");
+        return;
+    }
+    if(!qqname){
+        alert("请填写你的QQ名称！");
+        return;
+    }
+    if(!content){
+        alert("留言内容不能为空！");
+        return;
+    }
+    const now = new Date();
+    const timeStr = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+    const msgList = document.getElementById("msgList");
+    const div = document.createElement("div");
+    div.className = "msg-item";
+    div.innerHTML = `
+        <div class="msg-name">QQ名：${qqname} <span class="msg-gameid">｜游戏ID：${gameid}</span></div>
+        <div class="msg-time">${timeStr}</div>
+        <div class="msg-content">${content}</div>
+    `;
+    msgList.prepend(div);
+    //清空输入框
+    document.getElementById('gameid').value = "";
+    document.getElementById('qqname').value = "";
+    document.getElementById('msg').value = "";
+}
+
+//回到顶部按钮
+const backTopBtn = document.getElementById('backTop');
+window.addEventListener('scroll',()=>{
+    if(window.scrollY > 400){
+        backTopBtn.classList.add('show');
+    }else{
+        backTopBtn.classList.remove('show');
+    }
+})
+backTopBtn.onclick = ()=>{
+    window.scrollTo({top:0,behavior:"smooth"})
+}
+</script>
+</body>
+</html>
