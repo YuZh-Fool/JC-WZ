@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YuZhFool · 音序</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+body{
+  min-height:100vh;background:#0a0505;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;
+}
+.player{
+  width:680px;max-width:100%;background:#160a0a;border:1px solid rgba(255,60,60,.2);
+  border-radius:28px;padding:40px;text-align:center;
+}
+h1{font-size:28px;font-weight:700;color:#ff4d4d;margin-bottom:6px}
+.sub{color:#9a7070;font-size:14px;margin-bottom:28px}
+.err{color:#ff6b6b;font-size:13px;margin-top:6px;min-height:18px}
+
+.disc-wrap{position:relative;width:260px;height:260px;margin:0 auto 28px}
+.ring{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:4}
+.ring .bg{stroke:rgba(255,255,255,.08)}
+.ring .fg{stroke:#ff3b3b;stroke-linecap:round;stroke-dasharray:817;stroke-dashoffset:817}
+.disc{
+  width:224px;height:224px;border-radius:50%;position:absolute;top:18px;left:18px;
+  background:radial-gradient(circle at 38% 32%,#2a1010 0%,#0e0505 45%,#050202 100%);
+  border:8px solid #150707;
+  animation:spin 8s linear infinite;animation-play-state:paused;
+}
+.disc.playing{animation-play-state:running}
+.disc::before{content:"";position:absolute;inset:12px;border-radius:50%;
+  background:repeating-radial-gradient(circle at center,rgba(255,255,255,.05) 0 1.5px,transparent 1.5px 6px)}
+.disc .label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:92px;height:92px;border-radius:50%;background:linear-gradient(135deg,#ff2d2d,#8a0f14);
+  display:flex;align-items:center;justify-content:center;z-index:2}
+.disc .label span{font-size:36px;color:#fff}
+.disc .hole{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:15px;height:15px;border-radius:50%;background:#0a0505;border:3px solid #3a1010;z-index:3}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+.viz{width:100%;height:110px;margin-bottom:22px;border-radius:18px;background:#000;overflow:hidden;
+  display:flex;align-items:flex-end;justify-content:center;gap:4px;padding:12px}
+.viz span{width:6px;border-radius:3px;background:linear-gradient(180deg,#ff6b6b,#8a0f14);height:6px;transition:height .12s linear}
+
+.bar{height:8px;border-radius:8px;background:rgba(255,255,255,.1);cursor:pointer;position:relative;margin-bottom:8px}
+.bar .fill{height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,#8a0f14,#ff4d4d)}
+.time{display:flex;justify-content:space-between;color:#9a7070;font-size:13px;margin-bottom:24px}
+
+.ctrl{display:flex;align-items:center;justify-content:center;gap:28px;margin-bottom:22px}
+.ctrl button{border:none;background:transparent;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ctrl .icon{font-size:28px}
+.play-main{
+  width:76px;height:76px;border-radius:50%!important;background:linear-gradient(135deg,#ff2d2d,#8a0f14)!important;
+  color:#fff!important;box-shadow:0 10px 24px rgba(255,45,45,.35);
+}
+.play-main .icon{font-size:30px}
+
+.tools{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.tool-btn{padding:10px 18px;border-radius:14px;background:rgba(255,255,255,.07);color:#fff;
+  border:1px solid rgba(255,80,80,.2);font-size:14px;cursor:pointer}
+.tool-btn.active{background:linear-gradient(135deg,#ff2d2d,#8a0f14);border-color:transparent}
+.volume{display:flex;align-items:center;gap:8px;color:#9a7070;font-size:14px}
+.volume input{width:100px;accent-color:#ff2d2d;cursor:pointer}
+
+@media(max-width:560px){
+  .player{padding:28px 20px}
+  .disc-wrap{width:210px;height:210px}
+  .disc{width:182px;height:182px;top:14px;left:14px}
+}
+</style>
+</head>
+<body>
+<div class="player">
+  <h1>YuZhFool · 音序</h1>
+  <div class="sub" id="sub">共 20 首 · 本地音频</div>
+  <div class="err" id="err"></div>
+
+  <div class="disc-wrap">
+    <svg class="ring" viewBox="0 0 260 260">
+      <circle class="bg" cx="130" cy="130" r="112"></circle>
+      <circle class="fg" id="ringFg" cx="130" cy="130" r="112"></circle>
+    </svg>
+    <div class="disc" id="disc">
+      <div class="label"><span>♪</span></div>
+      <div class="hole"></div>
+    </div>
+  </div>
+
+  <div class="viz" id="viz"></div>
+
+  <div class="bar" id="bar"><div class="fill" id="fill"></div></div>
+  <div class="time"><span id="cur">0:00</span><span id="dur">0:00</span></div>
+
+  <div class="ctrl">
+    <button id="prev"><span class="icon">⏮</span></button>
+    <button id="playBtn" class="play-main"><span class="icon" id="playIcon">▶</span></button>
+    <button id="next"><span class="icon">⏭</span></button>
+  </div>
+
+  <div class="tools">
+    <button class="tool-btn" id="modeBtn">🔁 顺序</button>
+    <div class="volume">🔊<input type="range" id="vol" min="0" max="1" step="0.01" value="1"></div>
+  </div>
+</div>
+
+<audio id="audio" preload="auto"></audio>
+
+<script>
+// 文件名和文件夹里的 mp3 一一对应；改这里即可
+const songs = [
+  "1.mp3","2.mp3","3.mp3","4.mp3","5.mp3","6.mp3","7.mp3","8.mp3","9.mp3","10.mp3",
+  "11.mp3","12.mp3","13.mp3","14.mp3","15.mp3","16.mp3","17.mp3","18.mp3","19.mp3","20.mp3"
+];
+let mode="order", currentIndex=0;
+const audio=document.getElementById('audio');
+const subEl=document.getElementById('sub'), errEl=document.getElementById('err');
+const modeBtn=document.getElementById('modeBtn'), playIcon=document.getElementById('playIcon');
+const disc=document.getElementById('disc'), fill=document.getElementById('fill'), bar=document.getElementById('bar');
+const curEl=document.getElementById('cur'), durEl=document.getElementById('dur'), ringFg=document.getElementById('ringFg');
+const R=112, C=2*Math.PI*R;
+ringFg.style.strokeDasharray=C;
+
+/* 频谱柱（模拟，保证不影响出声） */
+const viz=document.getElementById('viz');
+for(let i=0;i<40;i++){viz.appendChild(document.createElement('span'));}
+const bars=viz.querySelectorAll('span');
+setInterval(()=>{
+  const max=audio.paused?6:90;
+  bars.forEach(b=>{b.style.height=(Math.random()*(max-6)+6)+"px";});
+},120);
+
+function fmt(t){if(isNaN(t))return"0:00";const m=Math.floor(t/60),s=Math.floor(t%60);return m+":"+(s<10?"0":"")+s;}
+function showErr(msg){errEl.innerText=msg||"";}
+
+function play(idx){
+  currentIndex=idx;
+  errEl.innerText="";
+  audio.loop=(mode==='loop');
+  audio.src=songs[idx];
+  audio.play().then(()=>{
+    subEl.innerText=`曲目 ${idx+1} / 20 · ${songs[idx]}`;
+  }).catch(err=>{
+    console.warn("播放失败",songs[idx],err);
+    showErr("无法播放 "+songs[idx]+"："+(err.name||"解码失败/被浏览器拦截"));
+  });
+}
+function next(){
+  if(mode==='random'){let r;do{r=Math.floor(Math.random()*songs.length);}while(r===currentIndex&&songs.length>1);play(r);}
+  else play((currentIndex+1)%songs.length);
+}
+function prev(){
+  if(mode==='random'){let r;do{r=Math.floor(Math.random()*songs.length);}while(r===currentIndex&&songs.length>1);play(r);}
+  else play((currentIndex-1+songs.length)%songs.length);
+}
+
+audio.onended=()=>{ if(mode!=='loop') next(); };
+audio.onplay=()=>{playIcon.innerText="⏸";disc.classList.add('playing');};
+audio.onpause=()=>{playIcon.innerText="▶";disc.classList.remove('playing');};
+audio.ontimeupdate=()=>{
+  const p=audio.duration?audio.currentTime/audio.duration:0;
+  fill.style.width=(p*100)+"%";
+  ringFg.style.strokeDashoffset=C*(1-p);
+  curEl.innerText=fmt(audio.currentTime);
+};
+audio.onloadedmetadata=()=>durEl.innerText=fmt(audio.duration);
+audio.onerror=()=>{
+  showErr("文件 "+audio.src.split('/').pop()+" 打不开或格式不被浏览器支持");
+};
+bar.onclick=e=>{const r=bar.getBoundingClientRect();audio.currentTime=(e.clientX-r.left)/r.width*audio.duration;};
+
+document.getElementById('playBtn').onclick=()=>{
+  if(!audio.src){play(0);return;}
+  if(audio.paused) audio.play().catch(err=>showErr("被浏览器拦截："+err.name));
+  else audio.pause();
+};
+document.getElementById('next').onclick=next;
+document.getElementById('prev').onclick=prev;
+
+const modeTexts=["🔁 顺序","🔀 随机","🔂 单曲"];
+const modeKeys=["order","random","loop"];
+let modePos=0;
+modeBtn.onclick=()=>{
+  modePos=(modePos+1)%modeKeys.length;
+  mode=modeKeys[modePos];
+  modeBtn.innerText=modeTexts[modePos];
+  modeBtn.classList.toggle('active',mode!=='order');
+  audio.loop=(mode==='loop');
+};
+document.getElementById('vol').oninput=e=>{audio.volume=e.target.value;};
+</script>
+</body>
+</html>
