@@ -80,7 +80,7 @@ input[type="range"]{width:200px;accent-color:#ff3333;}
   </div>
 </div>
 
-<audio id="audio" preload="metadata">
+<audio id="audio" preload="none">
 <script>
 const songs = [
   {name:"01",src:"1.mp3"},
@@ -120,6 +120,7 @@ const durTime = document.getElementById("durTime");
 let currentIndex = 0;
 let mode = 0; //0顺序 1随机 2单曲
 let isPlaying = false;
+let loading = false;
 
 function fmt(s){
   if(isNaN(s)) return "00:00";
@@ -128,17 +129,22 @@ function fmt(s){
   return m+":"+sec;
 }
 
-function playIdx(idx){
+async function playIdx(idx){
+  if(loading) return;
+  loading = true;
   currentIndex = idx;
   audio.src = songs[idx].src;
-  songText.textContent = songs[idx].name;
-  audio.play().then(()=>{
+  songText.textContent = songs[idx].name + " 加载中...";
+  try{
+    await audio.play();
     isPlaying = true;
+    songText.textContent = songs[idx].name;
     updateUI();
-  }).catch(e=>{
-    songText.textContent = songs[idx].name + " 无法播放";
-    console.log(e);
-  })
+  }catch(e){
+    songText.textContent = songs[idx].name + " 加载失败，自动下一首";
+    setTimeout(nextSong,1200);
+  }
+  loading = false;
 }
 function updateUI(){
   if(isPlaying){
@@ -150,12 +156,14 @@ function updateUI(){
   }
 }
 function prevSong(){
+  if(loading) return;
   let i;
   if(mode===1) i = Math.floor(Math.random()*songs.length);
   else i = (currentIndex -1 + songs.length) % songs.length;
   playIdx(i);
 }
 function nextSong(){
+  if(loading) return;
   let i;
   if(mode===2) i = currentIndex;
   else if(mode===1) i = Math.floor(Math.random()*songs.length);
@@ -164,9 +172,15 @@ function nextSong(){
 }
 
 playBtn.onclick = ()=>{
+  if(loading) return;
   if(!audio.src){playIdx(0);return;}
-  if(audio.paused){audio.play();isPlaying=true;}
-  else{audio.pause();isPlaying=false;}
+  if(audio.paused){
+    audio.play();
+    isPlaying=true;
+  }else{
+    audio.pause();
+    isPlaying=false;
+  }
   updateUI();
 }
 prevBtn.onclick = prevSong;
@@ -187,7 +201,7 @@ audio.ontimeupdate = ()=>{
 audio.onloadedmetadata = ()=>durTime.textContent = fmt(audio.duration);
 audio.onended = nextSong;
 timeLine.onclick = (e)=>{
-  if(!audio.duration) return;
+  if(!audio.duration || loading) return;
   const r = timeLine.getBoundingClientRect();
   const p = (e.clientX - r.left)/r.width;
   audio.currentTime = p * audio.duration;
